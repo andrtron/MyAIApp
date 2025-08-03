@@ -32,7 +32,6 @@ jobs:
         run: |
           set -eux
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          # актуальный архив на август 2025
           ZIP_NAME=commandlinetools-linux-13114758_latest.zip
           URL="https://dl.google.com/android/repository/${ZIP_NAME}"
           for i in 1 2 3; do
@@ -63,13 +62,13 @@ jobs:
           echo "${ANDROID_SDK_ROOT}/platform-tools" >> $GITHUB_PATH
           echo "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin" >> $GITHUB_PATH
 
-      - name: Install Gradle via SDKMAN
+      - name: Download and unpack Gradle
         run: |
           set -eux
-          curl -s "https://get.sdkman.io" | bash
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          sdk install gradle 8.1.1
-          gradle --version
+          GRADLE_VER=8.1.1
+          wget "https://services.gradle.org/distributions/gradle-${GRADLE_VER}-bin.zip" -O gradle.zip
+          unzip -q gradle.zip
+          echo "${{ github.workspace }}/gradle-${GRADLE_VER}/bin" >> $GITHUB_PATH
 
       - name: Build APK (с подробным выводом)
         run: |
