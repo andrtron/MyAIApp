@@ -1,0 +1,3 @@
+// MyAIApp/settings.gradle
+rootProject.name = "MyAIApp"
+include ':app'
