@@ -28,26 +28,31 @@ jobs:
       - name: Set ANDROID_SDK_ROOT
         run: echo "ANDROID_SDK_ROOT=$RUNNER_TEMP/android-sdk" >> $GITHUB_ENV
 
-      - name: Install Android command line tools (with retries & verbose)
+           - name: Install Android command line tools (with retries & verbose)
         run: |
           set -eux
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          # retry download up to 3 times with delay
+          # актуальный архив на август 2025: 
+          ZIP_NAME=commandlinetools-linux-13114758_latest.zip
+          URL="https://dl.google.com/android/repository/${ZIP_NAME}"
           for i in 1 2 3; do
-            echo "Attempt $i to download command line tools"
-            if wget https://dl.google.com/android/repository/commandlinetools-linux-10925401_latest.zip -O cmdline.zip; then
+            echo "Attempt $i to download $ZIP_NAME"
+            if wget "$URL" -O cmdline.zip; then
               break
             else
-              echo "Download failed, sleeping then retrying..."
+              echo "Download failed, retrying after sleep..."
               sleep 5
             fi
           done
           ls -lah .
           unzip -o cmdline.zip -d temp-tools
           ls -lah temp-tools
-          mv temp-tools/cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          # структура внутри: temp-tools/cmdline-tools -> помещаем в latest
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          mv temp-tools/cmdline-tools/* "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
           ls -R "$ANDROID_SDK_ROOT/cmdline-tools/latest" | head -n 80
           rm -rf cmdline.zip temp-tools
+
 
       - name: Install Android SDK components
         run: |
