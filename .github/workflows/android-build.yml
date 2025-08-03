@@ -8,8 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
 
     steps:
       - name: Checkout code
@@ -25,6 +23,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y unzip wget zip
+
+      - name: Set ANDROID_SDK_ROOT
+        run: echo "ANDROID_SDK_ROOT=$RUNNER_TEMP/android-sdk" >> $GITHUB_ENV
 
       - name: Install Android command line tools
         run: |
@@ -44,17 +45,16 @@ jobs:
           echo "${ANDROID_SDK_ROOT}/platform-tools" >> $GITHUB_PATH
           echo "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin" >> $GITHUB_PATH
 
-      - name: Install SDKMAN and Gradle
+      - name: Install Gradle via SDKMAN
         run: |
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install gradle 8.1.1
-          echo "Using gradle version:"
+          echo "Using gradle:"
           gradle --version
 
       - name: Build APK
         run: |
-          # если есть gradlew в репозитории, используем его, иначе системный gradle
           if [ -x "./gradlew" ]; then
             chmod +x ./gradlew
             ./gradlew clean assembleDebug
