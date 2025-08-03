@@ -19,19 +19,22 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install unzip
-        run: sudo apt-get update && sudo apt-get install -y unzip
+      - name: Install unzip and wget
+        run: sudo apt-get update && sudo apt-get install -y unzip wget
 
-      - name: Download Gradle
+      - name: Download and unzip Gradle
         run: |
           wget https://services.gradle.org/distributions/gradle-8.1.1-bin.zip
           unzip -q gradle-8.1.1-bin.zip
-          echo "::add-path::$(pwd)/gradle-8.1.1/bin"
+          echo "${{ github.workspace }}/gradle-8.1.1/bin" >> $GITHUB_PATH
 
-      - name: Build APK (debug fallback)
+      - name: Build APK (release if possible, fallback to debug)
         run: |
-          ./gradlew clean assembleRelease || (echo "Gradle wrapper failed, using installed gradle" && \
-            ./gradle-8.1.1/bin/gradle clean assembleDebug)
+          if [ -x "./gradlew" ]; then
+            ./gradlew clean assembleRelease || ./gradlew assembleDebug
+          else
+            gradle-8.1.1/bin/gradle clean assembleDebug
+          fi
 
       - name: Collect APK
         uses: actions/upload-artifact@v4
